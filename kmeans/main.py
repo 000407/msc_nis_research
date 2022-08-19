@@ -1,61 +1,154 @@
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 import random
 
+from ec.sec import StegoEllipticCurve
+from lsbp.lsbp import LSBPlus
+from sage.schemes.elliptic_curves.ell_point import EllipticCurvePoint
 from tqdm import tqdm
 
 from sklearn.cluster import KMeans
 
 
-def clusterize(path: str, n_clusters: int, random_state: int):
-    p_bar = tqdm(range(100))
+class ProgressBar:
+    def __init__(self):
+        self.tqdm = tqdm(range(100))
+        self._completed = 0
 
-    original_image = cv2.imread(path)
-    img = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
-    img = np.float32(img.reshape((-1, 3)))
+    def update_by(self, progress: float, message: str = None):
+        self._completed += progress
+        self.tqdm.update(self._completed)
 
-    p_bar.update(10)
-    p_bar.refresh()
+        if message is not None:
+            self.tqdm.set_description(message)
+
+        self.tqdm.refresh()
+
+    def complete(self):
+        self.tqdm.close()
+
+
+def demonstrate_embedding(dir_name: str, f_name: str, stego_curve: StegoEllipticCurve, recip_key_u: EllipticCurvePoint, secret: int) -> tuple[list[int], np.ndarray]:
+    centroid_coords = np.array(stego_curve.generate_points(recip_key_u))
+
+    p_bar = ProgressBar()
+
+    img = cv2.imread(f'{dir_name}/{f_name}')
+    # img = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
+    img_f = np.float32(img)
+
+    centroids = img_f[centroid_coords[:, 0], centroid_coords[:, 1]]
+    n_clusters = len(centroids)
+    original_shape = img.shape
+
+    img = img.reshape((-1, 3))
+    img_f = img_f.reshape((-1, 3))
+
+    p_bar.update_by(10, f'Loading image {dir_name}/{f_name}... DONE!, commencing clustering...')
 
     # Fitting K-Means to the dataset
-    kmeans = KMeans(n_clusters=n_clusters, init='k-means++', random_state=random_state)
-    y_kmeans = kmeans.fit_predict(img)
-    p_bar.update(65)
-    p_bar.refresh()
+    kmeans = KMeans(n_clusters=n_clusters, init=centroids, max_iter=1, n_init=1)
+    labels = kmeans.fit_predict(img_f)  # TODO: Check if this method is correct
+    np_labels = np.array(labels)
 
-    plt.rcParams["figure.figsize"] = [3 * i for i in plt.rcParams["figure.figsize"]]
-    ax = plt.figure().add_subplot(projection='3d')
+    p_bar.update_by(15, f'Clustering is complete. Commencing key generation...')
 
-    # for x in range(y_kmeans.shape[0]):
-    #     plt.annotate(f'[{X[x][0]}, {X[x][1]}, {X[x][2]}]', (X[x][0], X[x][1]))
+    d_lbl_cent = {
+        n: {
+            'c': centroids[n].tolist(),
+            'i': np.where(np_labels == n)[0].tolist()
+        } for n in list(set(labels))}
 
-    # Visualising the clusters
-    for i in range(3):
-        # print(X[y_kmeans == i, 0], X[y_kmeans == i, 1], X[y_kmeans == i, 2])
-        ax.scatter(img[y_kmeans == i, 0], img[y_kmeans == i, 1], img[y_kmeans == i, 2],
-                   s=100, c=f'#{"".join(random.choice("0123456789abcdef") for c in range(6))}',
-                   label=f'Cluster {i + 1}')
-    p_bar.update(80)
-    p_bar.refresh()
+    keys = random.sample(range(16, 255), n_clusters)  # TODO: Think of the range & key exchange
 
-    ax.scatter(kmeans.cluster_centers_[:, 0],
-               kmeans.cluster_centers_[:, 1],
-               kmeans.cluster_centers_[:, 2], s=300, c='yellow', label='Centroids')
+    p_bar.update_by(5, f'Key generation is complete. Commencing embedding...')
 
-    plt.title(f'Pixel Clusters: {path}')
-    ax.set_xlabel('Red')
-    ax.set_ylabel('Green')
-    ax.set_zlabel('Blue')
-    # plt.legend()
-    plt.show()
+    lsb_plus = LSBPlus()
+    embed_res = [None] * img.shape[0]
 
-    p_bar.update(100)
-    p_bar.refresh()
+    for c_index in d_lbl_cent:
+        for b_index in d_lbl_cent[c_index]['i']:
+            c_blocks = img[b_index].tolist()
+            e_blocks, secret = lsb_plus.embed(secret, list(zip([keys[c_index]] * len(c_blocks), c_blocks)))
+            p_bar.update_by(60 / img.shape[0], f'Embedding {secret:0b}...')
+            # print(f'{b_index}: {e_blocks}, {img[b_index]}')
+            embed_res[b_index] = e_blocks
+
+    p_bar.update_by(0, f'Embedding secret is completed. Writing image file to output/{f_name}...')
+
+    # print(img.tolist())
+    # print(embed_res)
+    embed_res = np.reshape(np.array(embed_res), original_shape)
+    cv2.imwrite(f'output/{f_name}', embed_res)
+
+    p_bar.update_by(10, f'Embedding completed!')
+    p_bar.complete()
+    return keys, embed_res
+
+
+def demonstrate_extraction(dir_name: str, f_name: str, stego_curve: StegoEllipticCurve, recip_key_u: EllipticCurvePoint, expected_secret: int, keys: list[int]) -> int:
+    centroid_coords = np.array(stego_curve.generate_points(recip_key_u))
+
+    # p_bar = ProgressBar()
+
+    img = cv2.imread(f'{dir_name}/{f_name}')
+    # img = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
+    img_f = np.float32(img)
+
+    centroids = img_f[centroid_coords[:, 0], centroid_coords[:, 1]]
+    n_clusters = len(centroids)
+    original_shape = img.shape
+
+    img = img.reshape((-1, 3))
+    img_f = img_f.reshape((-1, 3))
+
+    # p_bar.update_by(10, f'Loading image {dir_name}/{f_name}... DONE!, commencing clustering...')
+
+    # Fitting K-Means to the dataset
+    kmeans = KMeans(n_clusters=n_clusters, init=centroids, max_iter=1, n_init=1)
+    labels = kmeans.fit_predict(img_f)  # TODO: Check if this method is correct
+    np_labels = np.array(labels)
+
+    # p_bar.update_by(20, f'Clustering is complete. Commencing retrieval...')
+
+    d_lbl_cent = {
+        n: {
+            'c': centroids[n].tolist(),
+            'i': np.where(np_labels == n)[0].tolist()
+        } for n in list(set(labels))}
+
+    lsb_plus = LSBPlus()
+    embed_res = [None] * img.shape[0]
+
+    extracted_secret = 0
+    for c_index in d_lbl_cent:
+        for b_index in d_lbl_cent[c_index]['i']:
+            c_blocks = img[b_index].tolist()
+            t_secret = lsb_plus.extract(list(zip([keys[c_index]] * len(c_blocks), c_blocks)))
+            # p_bar.update_by(60 / img.shape[0], f'Extracting secret from {c_blocks}...')
+            # print(f'{b_index}: {e_blocks}, {img[b_index]}')
+            print(t_secret)
+            extracted_secret = (expected_secret << t_secret.bit_length()) | t_secret
+
+    # p_bar.update_by(0, f'Extracting secret is completed. Comparing with the expected...')
+
+    extracted_secret = extracted_secret & expected_secret
+    message = f'{extracted_secret:0b} == {expected_secret:0b} ? {True if extracted_secret == expected_secret else False}'
+
+    # p_bar.update_by(10, f'Extraction completed!')
+    # p_bar.complete()
+
+    print(message)
+    return extracted_secret
 
 
 if __name__ == '__main__':
-    # for i in range(6):
-    clusterize('test_data/test1.jpg', 3, 42)
+    sec_a = StegoEllipticCurve(5, 2, 1, 3)
+    sec_b = StegoEllipticCurve(5, 2, 1, 2)
 
+    p_a = sec_a.key_u
+    p_b = sec_b.key_u
+
+    kys, res = demonstrate_embedding('test_data', 'test1_sm.png', sec_a, p_b, 3557)
+    ex_secret = demonstrate_extraction('output', 'test1_sm.png', sec_b, p_a, 3557, kys)
     exit()
