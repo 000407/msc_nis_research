@@ -137,6 +137,10 @@ if __name__ == '__main__':
     print(f'r_s_bits = {r_s_bits}')
 
     e_s_bits = lsb_plus.extract([(244, b) for b in e_bytes])
-    print(f's_bits   = {format(s_bits, "020b")}')
-    print(f'e_s_bits = {format(e_s_bits, "020b")}')
+    print(f's_bits   = {format(s_bits, f"0{e_s_bits.bit_length()}b")}')
+    print(f'e_s_bits = {e_s_bits:0b}')
+
+    message = f'{s_bits:0b} == {e_s_bits:0b} ? {True if (s_bits & e_s_bits) == s_bits else False}'
+    print(message)
+
     # exit()
