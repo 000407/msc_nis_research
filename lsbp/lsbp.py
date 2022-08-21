@@ -20,7 +20,8 @@ class LSBPlus:
 
         return x
 
-    def embed(self, secret_bits: int, c_blocks: list[tuple[int, int]]) -> tuple[list[int], int]:
+    def embed(self, secret_bits: int, c_blocks: list[tuple[int, int]]) \
+            -> tuple[list[int], int]:
         if secret_bits == 0:
             return [n[1] for n in c_blocks], secret_bits
 
@@ -30,7 +31,8 @@ class LSBPlus:
             key = tpl[0]
             c_block = tpl[1] ^ key
 
-            is_dyn_embeddable = (c_block & self._mask_e_flag) == 128 or self.get_even_parity(c_block, mask=224) == 1
+            is_dyn_embeddable = (c_block & self._mask_e_flag) == 128 \
+                or self.get_even_parity(c_block, mask=224) == 1
 
             if secret_bits > 0:
                 # print(f'{"T" if (c_block & self._mask_e_flag) == 128 else "F"}{"T" if self.get_even_parity(c_block, mask=224) == 1 else "F"}->', end='')
@@ -77,7 +79,8 @@ class LSBPlus:
             key = tpl[0]
             c_block = tpl[1] ^ key
 
-            is_dyn_embeddable = (c_block & self._mask_e_flag) == 128 or self.get_even_parity(c_block, mask=224) == 1
+            is_dyn_embeddable = (c_block & self._mask_e_flag) == 128 \
+                or self.get_even_parity(c_block, mask=224) == 1
 
             # print(f'{"T" if (c_block & self._mask_e_flag) == 128 else "F"}{"T" if self.get_even_parity(c_block, mask=224) == 1 else "F"}->', end='')
             if is_dyn_embeddable:
