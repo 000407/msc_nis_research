@@ -4,7 +4,8 @@ from random import randrange
 
 
 class StegoEllipticCurve:
-    def __init__(self, prime, a: int, b: int, key_p: int, generator_conf: tuple[int, int, bool] = (-1, -1, True)):
+    def __init__(self, prime: int, a: int, b: int,
+                 key_p: int, generator_conf: tuple[int, int, bool] = (-1, -1, True)):
         self._generator = None
         self.prime = prime
         self.a = a
@@ -44,9 +45,6 @@ class StegoEllipticCurve:
             xy = point_int.xy()
 
             sm_res.append((int(xy[0]), int(xy[1])))
-
-        # print(f'scalar.x: {scalar.xy()[0]}')
-        # print(sm_res)
 
         return sm_res
 
