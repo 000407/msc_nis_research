@@ -35,12 +35,12 @@ class StegoEllipticCurve:
         self._generator = self.curve(x, y)
 
     def generate_points(self, key_recip_u: EllipticCurvePoint) -> list[tuple[int, int]]:
-        scalar = self.key_p * key_recip_u
         sm_res = []
 
-        point_int = scalar
-        for x in range(scalar.xy()[0]):
-            point_int = point_int + scalar  # TODO: Generator? Or scalar?
+        point_int = self.key_p * key_recip_u
+        scalar = point_int.xy()[0]
+        for x in range(scalar):
+            point_int = point_int + self._generator
 
             xy = point_int.xy()
 
