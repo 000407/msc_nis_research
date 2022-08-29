@@ -1,1 +1,4 @@
 .idea
+.env
+/test/test_data/
+/test/output/
