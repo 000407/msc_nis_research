@@ -78,7 +78,7 @@ class MongoClient:
             project = {}
         res = list(self._client.db_stego[query['collection'].name].find(query['query'], project))
 
-        return res[0] if len(res) >= 0 else None
+        return res[0] if len(res) > 0 else None
 
     def find_all_by(self, query: dict[str, any], project=None):
         self.validate_find(query)
