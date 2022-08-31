@@ -74,8 +74,12 @@ def hist_rgb(o_path, s_path, make_plot: bool = False, save_plot: bool = False, o
 
         if save_plot:
             out_dir = out_dir.strip('/')
-            out_dir = f'/{out_dir}' if out_dir else ''
-            plot_path = f'./output{out_dir}/pd_hist_{time.time_ns()}.png'
+            out_dir = os.path.abspath(f'{out_dir}' if out_dir else './output')
+
+            if not os.path.exists(out_dir):
+                os.makedirs(out_dir)
+
+            plot_path = f'{out_dir}/pd_hist_{time.time_ns()}.png'
             plt.savefig(plot_path)
 
         plt.close(fig)
@@ -111,7 +115,7 @@ def hist_rgb(o_path, s_path, make_plot: bool = False, save_plot: bool = False, o
                 'bin_edges': be2b.tolist()
             }
         },
-        'plot_path': plot_path
+        'plot_path': './' + os.path.relpath(plot_path, '.')
     }
 
 

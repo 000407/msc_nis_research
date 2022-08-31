@@ -15,7 +15,7 @@ def same_secret_different_carriers_histogram():
         data = {
             'carrierId': c['_id'],
             'stegoPath': s_path,
-            'histogramData': hist_rgb(c_path, s_path, make_plot=True, save_plot=True, out_dir='pdh_cs')
+            'histogramData': hist_rgb(c_path, s_path, make_plot=True, save_plot=True, out_dir='./output/pdh_cs')
         }
         print(f' completed; Saving data to db...', end='')
 
