@@ -85,3 +85,6 @@ class MongoClient:
         if project is None:
             project = {}
         return self._client.db_stego[query['collection'].name].find(query['query'], project)
+
+    def aggregate(self, collection: CollectionName, pipeline: list[dict[str, any]]):
+        return self._client.db_stego[collection.name].aggregate(pipeline)
