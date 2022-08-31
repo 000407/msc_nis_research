@@ -8,14 +8,22 @@ from ec.sec import StegoEllipticCurve
 from lsbp_stego.lsbp_stego import LSBPlusStego
 
 
+def get_random_secret(length: int):
+    secret = 0
+    for i in range(length):
+        secret = (secret << 1) | random.randrange(2)
+
+    return secret
+
+
 def secret_len_test():
     client = MongoClient()
-    c_path = './test_data/carrier/img_0001.png'
+    c_name = 'img_0001.png'
     obj = client.find_one_by(
         {
             'collection': CollectionName.CARRIER,
             'query': {
-                'path': c_path
+                'name': c_name
             }
         }
     )
@@ -26,11 +34,12 @@ def secret_len_test():
 
         stego = LSBPlusStego(sec_a)
 
-        secret = 177
+        secret = get_random_secret(500)
 
-        for i in range(500):
-            secret = (secret << 1) | random.randrange(2)
-            print(f'Embedding {secret} (sample: {(i + 1):03d})...', end='')
+        for i in range(500, 1000):
+            secret_bit = random.randrange(2)
+            secret = (secret << 1) | secret_bit
+            print(f'Embedding secret (sample: {(i + 1):03d})...', end='')
 
             start = time.time()
             path_i = os.path.abspath('./test_data/carrier/img_0001.png')
@@ -48,6 +57,7 @@ def secret_len_test():
             data = {
                 'index': i + 1,
                 'secretLength': secret.bit_length(),
+                'secretBit': secret_bit,
                 'timeElapsed': end - start,
                 'psnr': psnr_v,
                 'ssim': ssim_v,
