@@ -33,7 +33,7 @@ def random_fixed_length_secret_test():
 
         stego = LSBPlusStego(sec_a)
 
-        for i in range(57, 500):
+        for i in range(500):
             secret = get_random_secret(1600 * 3)
             print(f'Embedding sample: {(i + 1):03d}...', end='')
 
