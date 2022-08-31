@@ -18,8 +18,9 @@ def same_secret_different_carriers():
     sec_a = StegoEllipticCurve(1049, 1672, 4562, 403)
     sec_b = StegoEllipticCurve(1049, 1672, 4562, 343)
     stego = LSBPlusStego(sec_a)
+    carriers = list(client.find_all(CollectionName.CARRIER))
 
-    for c in client.find_all(CollectionName.CARRIER):
+    for c in carriers:
         print(f'Embedding secret in carrier: {c["name"]})...', end='')
 
         start = time.time()
