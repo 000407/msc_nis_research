@@ -1,10 +1,6 @@
 import random
-import time
 
 from db.mongo import *
-from dip_tests.dip import *
-from ec.sec import StegoEllipticCurve
-from lsbp_stego.lsbp_stego import LSBPlusStego
 from steganalysis.pd_hist import hist_rgb
 
 
@@ -37,7 +33,7 @@ def random_fixed_length_secret_histogram():
             data = {
                 'carrierId': carrier['_id'],
                 'stegoPath': s_path,
-                'histogramData': hist_rgb(c_path, s_path, make_plot=True, save_plot=True, out_dir='pdh_cs')
+                'histogramData': hist_rgb(c_path, s_path, make_plot=True, save_plot=True, out_dir='./output/pdh_rfls')
             }
             print(f' completed; Saving data to db...', end='')
 
