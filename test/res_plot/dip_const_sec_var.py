@@ -15,7 +15,7 @@ def plot_const_secret_dip_variation_idx(mongo_client: MongoClient, save_plot: bo
 
     conf_plots(sub_figs, df, df.index)
 
-    fig.suptitle('DIP Measures Variation: Sample Indices', fontsize=18, fontweight='bold')
+    fig.suptitle('DIP Measures Variation: Same Secret in Different Carriers (by Sample Index)', fontsize=18, fontweight='bold')
 
     if save_plot:
         out_dir = out_dir.strip('/')
@@ -70,7 +70,7 @@ def plot_const_secret_dip_variation_px_count(mongo_client: MongoClient, save_plo
 
     conf_plots(sub_figs, df, range(len(df.index)))
 
-    fig.suptitle('DIP Measures Variation: Pixel Count', fontsize=18, fontweight='bold')
+    fig.suptitle('DIP Measures Variation: Same Secret in Different Carriers (by Pixel Count)', fontsize=18, fontweight='bold')
 
     if save_plot:
         out_dir = out_dir.strip('/')
