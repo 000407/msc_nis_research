@@ -34,9 +34,9 @@ def secret_len_test():
 
         stego = LSBPlusStego(sec_a)
 
-        secret = get_random_secret(500)
+        secret = get_random_secret(1)
 
-        for i in range(500, 1000):
+        for i in range(0, 2000):
             secret_bit = random.randrange(2)
             secret = (secret << 1) | secret_bit
             print(f'Embedding secret (sample: {(i + 1):03d})...', end='')
