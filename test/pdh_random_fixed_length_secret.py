@@ -1,15 +1,5 @@
-import random
-
 from db.mongo import *
 from steganalysis.pd_hist import hist_rgb
-
-
-def get_random_secret(length: int):
-    secret = 0
-    for i in range(length):
-        secret = (secret << 1) | random.randrange(2)
-
-    return secret
 
 
 def random_fixed_length_secret_histogram():

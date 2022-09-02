@@ -1,4 +1,3 @@
-import os
 import random
 import time
 
@@ -6,14 +5,7 @@ from db.mongo import *
 from dip_tests.dip import *
 from ec.sec import StegoEllipticCurve
 from lsbp_stego.lsbp_stego import LSBPlusStego
-
-
-def get_random_secret(length: int):
-    secret = 0
-    for i in range(length):
-        secret = (secret << 1) | random.randrange(2)
-
-    return secret
+from util import get_random_secret
 
 
 def secret_len_test():
