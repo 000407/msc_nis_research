@@ -10,6 +10,7 @@
 # Workshop on Information Forensics and Security
 # -----------------------------------------------------------------------------
 
+import cv2
 import time
 import numpy as np
 from PIL import Image
@@ -81,29 +82,30 @@ def WOW(cover, payload, params):
     rhoM1[cover == 0] = wetCost     # do not embed -1 if the pixel has min value
 
     # Embedding simulator
-    stego = EmbeddingSimulator(cover, rhoP1, rhoM1, payload * cover.size, False)
+    stego = EmbeddingSimulator(cover, payload, rhoP1, rhoM1,  False)
     distortion_local = rho[cover != stego]
     distortion = np.sum(distortion_local)
 
     return stego, distortion
 
 
-def EmbeddingSimulator(x, rhoP1, rhoM1, m, fixEmbeddingChanges):
-    n = x.size
-    m_lambda = calc_lambda(rhoP1, rhoM1, m, n)
-    pChangeP1 = (np.exp(-m_lambda * rhoP1)) / (1 + np.exp(-m_lambda * rhoP1) + np.exp(-m_lambda * rhoM1))
-    pChangeM1 = (np.exp(-m_lambda * rhoM1)) / (1 + np.exp(-m_lambda * rhoP1) + np.exp(-m_lambda * rhoM1))
-    if fixEmbeddingChanges:
-        np.random.seed(100)
-    else:
-        np.random.seed(int(time.time()))
+def EmbeddingSimulator(cover, payload, rhoP1, rhoM1, fixEmbeddingChanges):
+    n = cover.size
+    secret_bits = np.reshape(bin_arr(payload, n), cover.shape)
 
-    randChange = np.random.rand(*x.shape)
-    y = x.copy()
-    y[randChange < pChangeP1] = y[randChange < pChangeP1] + 1
-    y[np.logical_and(randChange >= pChangeP1, randChange < (pChangeP1+pChangeM1))] = y[np.logical_and(randChange >= pChangeP1, randChange < (pChangeP1+pChangeM1))] - 1
+    m_lambda = calc_lambda(rhoP1, rhoM1, secret_bits.size, n)
+    p_c_p1 = (np.exp(-m_lambda * rhoP1)) / (1 + np.exp(-m_lambda * rhoP1) + np.exp(-m_lambda * rhoM1))
+    p_c_m1 = (np.exp(-m_lambda * rhoM1)) / (1 + np.exp(-m_lambda * rhoP1) + np.exp(-m_lambda * rhoM1))
+
+    y = cover.copy()
+    y[secret_bits < p_c_p1] = y[secret_bits < p_c_p1] + 1
+    y[np.logical_and(secret_bits >= p_c_p1, secret_bits < (p_c_p1+p_c_m1))] = y[np.logical_and(secret_bits >= p_c_p1, secret_bits < (p_c_p1+p_c_m1))] - 1
 
     return y
+
+
+def bin_arr(num, m):
+    return np.array(list(np.binary_repr(num).zfill(m))).astype(np.int8)
 
 
 def calc_lambda(rhoP1, rhoM1, message_length, n):
@@ -155,21 +157,30 @@ def ternary_entropyf(pP1, pM1):
 
 
 if __name__ == '__main__':
-    img_path = 'nijq.jpg'       # image path
-    payload = 0.4               # payload(bits per pixel)
+    img_path = './test_data/test1_sm.png'       # image path
+    payload = 3521               # payload(bits per pixel)
     params = -1                 # holder norm parameter
 
-    cover = Image.open(img_path)
-    if cover.mode == 'RGB':
-        cover = cover.convert('L')
-    cover = np.array(cover)
+    # cover = cv2.imread(img_path)
+    cover = np.array([[[111, 112, 113], [121, 122, 123]], [[211, 212, 213], [221, 222, 223]]])
+    orig_cvr_shape = cover.shape
+
+    is_cover_rgb = len(orig_cvr_shape) == 3 and orig_cvr_shape[-1] == 3
+
+    # Normalisation of RGB image to flat 2D array
+    if is_cover_rgb:
+        cover = cover.reshape((orig_cvr_shape[0], orig_cvr_shape[1] * orig_cvr_shape[2]))
+
     stego, distortion = WOW(cover, payload, params)
 
     residual = (stego - cover.astype('float64') + 1)/2
     # print(residual)
 
+    if is_cover_rgb:
+        stego = stego.reshape(orig_cvr_shape)
+
     plt.subplot(121)
-    plt.imshow(cover, cmap='gray')
+    plt.imshow(cover)
     plt.subplot(122)
-    plt.imshow(residual, cmap='gray')
+    plt.imshow(residual)
     plt.show()
