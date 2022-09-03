@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from db.mongo import MongoClient, CollectionName
-from lsbputils.util import conf_plots
+from plotutils import conf_plots_dip_all
 
 
 def plot_const_secret_dip_variation_idx(mongo_client: MongoClient, save_plot: bool = False, out_dir: str = ''):
@@ -13,7 +13,7 @@ def plot_const_secret_dip_variation_idx(mongo_client: MongoClient, save_plot: bo
     fig = plt.figure(constrained_layout=True, figsize=(15, 12))
     sub_figs = fig.subfigures(3, 1, wspace=0.07)
 
-    conf_plots(sub_figs, df, df.index)
+    conf_plots_dip_all(sub_figs, df, df.index)
 
     fig.suptitle('DIP Measures Variation: Same Secret in Different Carriers (by Sample Index)', fontsize=18, fontweight='bold')
 
@@ -68,7 +68,7 @@ def plot_const_secret_dip_variation_px_count(mongo_client: MongoClient, save_plo
     fig = plt.figure(constrained_layout=True, figsize=(15, 12))
     sub_figs = fig.subfigures(3, 1, wspace=0.07)
 
-    conf_plots(sub_figs, df, range(len(df.index)))
+    conf_plots_dip_all(sub_figs, df, range(len(df.index)))
 
     fig.suptitle('DIP Measures Variation: Same Secret in Different Carriers (by Pixel Count)', fontsize=18, fontweight='bold')
 

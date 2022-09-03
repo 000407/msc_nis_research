@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from lsbputils.util import conf_plots
+from plotutils import conf_plots_dip_all
 from db.mongo import MongoClient, CollectionName
 
 
@@ -13,7 +13,7 @@ def plot_const_carrier_dip_variation_idx(mongo_client: MongoClient, save_plot: b
     fig = plt.figure(constrained_layout=True, figsize=(15, 12))
     sub_figs = fig.subfigures(3, 1, wspace=0.07)
 
-    conf_plots(sub_figs, df, df.index)
+    conf_plots_dip_all(sub_figs, df, df.index)
 
     fig.suptitle('DIP Measures Variation: Random Fixed-Length Secret; Same Carrier', fontsize=18, fontweight='bold')
 
