@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from util import conf_plots
+from lsbputils.util import conf_plots
 from db.mongo import MongoClient, CollectionName
 
 

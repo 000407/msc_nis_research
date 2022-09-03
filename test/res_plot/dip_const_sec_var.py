@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from db.mongo import MongoClient, CollectionName
-from util import conf_plots
+from lsbputils.util import conf_plots
 
 
 def plot_const_secret_dip_variation_idx(mongo_client: MongoClient, save_plot: bool = False, out_dir: str = ''):

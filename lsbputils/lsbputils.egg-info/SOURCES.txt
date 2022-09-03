@@ -1,0 +1,5 @@
+setup.py
+lsbputils.egg-info/PKG-INFO
+lsbputils.egg-info/SOURCES.txt
+lsbputils.egg-info/dependency_links.txt
+lsbputils.egg-info/top_level.txt
