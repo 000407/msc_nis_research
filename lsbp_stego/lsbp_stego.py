@@ -1,3 +1,5 @@
+import os.path
+
 import cv2
 import numpy as np
 import random
@@ -55,6 +57,11 @@ class LSBPlusStego:
             out_img[out_block_order[i]] = [embed_res[(i * 3) + 0], embed_res[(i * 3) + 1], embed_res[(i * 3) + 2]]
 
         embed_res = np.reshape(np.array(out_img), original_shape)
+
+        out_dir = os.path.dirname(out_file)
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
         cv2.imwrite(out_file, embed_res)
 
         return keys, embed_res

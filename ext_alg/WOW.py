@@ -12,7 +12,7 @@
 
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+import os
 from scipy.signal import convolve2d
 
 
@@ -154,10 +154,10 @@ def ternary_entropyf(pP1, pM1):
     return Ht
 
 
-def demo_wow_embed(img_path: str, payload: int):
+def demo_wow_embed(cover_path: str, payload: int, out_path: str, save_out: bool = False):
     params = -1                 # holder norm parameter
 
-    cover = cv2.imread(img_path)
+    cover = cv2.imread(cover_path)
     orig_cvr_shape = cover.shape
 
     is_cover_rgb = len(orig_cvr_shape) == 3 and orig_cvr_shape[-1] == 3
@@ -174,10 +174,11 @@ def demo_wow_embed(img_path: str, payload: int):
     if is_cover_rgb:
         stego = stego.reshape(orig_cvr_shape)
 
-    plt.subplot(121)
-    plt.imshow(cover)
-    plt.subplot(122)
-    plt.imshow(residual)
-    plt.show()
+    if save_out:
+        out_dir = os.path.dirname(out_path)
+        if not os.path.exists(out_dir):
+            os.makedirs(out_dir)
+
+        cv2.imwrite(out_path, stego, [cv2.IMWRITE_PNG_COMPRESSION, 0])
 
     return stego, distortion
