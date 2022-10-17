@@ -35,7 +35,7 @@ def demonstrate_embedding(dir_name: str, f_name: str, stego_curve: StegoElliptic
 
     img = cv2.imread(f'{dir_name}/{f_name}')
     # img = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
-    img_f = np.float32(img * 252)
+    img_f = np.float32(img & 252)
 
     centroids = img_f[centroid_coords[:, 0], centroid_coords[:, 1]]
     n_clusters = len(centroids)
@@ -100,7 +100,7 @@ def demonstrate_extraction(dir_name: str, f_name: str, stego_curve: StegoEllipti
 
     img = cv2.imread(f'{dir_name}/{f_name}')
     # img = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
-    img_f = np.float32(img * 252)
+    img_f = np.float32(img & 252)
 
     centroids = img_f[centroid_coords[:, 0], centroid_coords[:, 1]]
     n_clusters = len(centroids)
